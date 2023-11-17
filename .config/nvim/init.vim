@@ -27,3 +27,35 @@ set splitright              " Split new windows to the right of the current one
 set equalalways             " Keep window sizes equal
 set sessionoptions-=blank   " Don't save blank windows in sessions
 filetype indent on          " Disable automatic indentation for specific filetypes
+
+" #############################
+" ###### SWAP AND BACKUP ######
+" #############################
+
+" Create swap, undo, backup and sessions directories if they don't exist
+if !isdirectory($HOME. "/.local/state/nvim/swap")
+    call mkdir($HOME. "/.local/state/nvim/swap", "p")
+endif
+
+if !isdirectory($HOME. "/.local/state/nvim/undo")
+    call mkdir($HOME. "/.local/state/nvim/undo", "p")
+endif
+
+if !isdirectory($HOME. "/.local/state/nvim/backup")
+    call mkdir($HOME. "/.local/state/nvim/backup", "p")
+endif
+
+if !isdirectory($HOME. "/.local/state/nvim/sessions")
+    call mkdir($HOME. "/.local/state/nvim/sessions", "p")
+endif
+
+set swapfile " Protect changes between writes, def values: 200 keystrokes / 4 seconds
+set directory^=~/.local/state/nvim/swap// " Set directory for swap files
+
+set writebackup " Protect against crash-during-write
+set nobackup " Do not persist backup after successful write
+set backupcopy=auto " Use rename-and-write-new method whenever safe
+set backupdir^=~/.local/state/nvim/backup// " Set directory for backup files
+
+set undofile " Persist the undo tree for each file
+set undodir^=~/.local/state/nvim/undo// " Set directory for undo tree files
