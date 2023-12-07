@@ -59,3 +59,88 @@ set backupdir^=~/.local/state/nvim/backup// " Set directory for backup files
 
 set undofile " Persist the undo tree for each file
 set undodir^=~/.local/state/nvim/undo// " Set directory for undo tree files
+
+" #########################
+" ###### KEYBINDINGS ######
+" #########################
+
+"" Insert a new line below
+nnoremap <Enter> o<ESC>
+
+"" Add a space after the cursor
+nnoremap <Space> a<Space><ESC>
+
+"" Map 'jk' in insert mode to Escape
+inoremap jk <ESC>
+
+"" Turn off search highlighting with ',<Space>'
+nnoremap ,<Space> :nohlsearch<CR>
+
+"" Delete without yanking to the default register
+nnoremap x "_x
+xnoremap x "_x
+
+"" Swap 'p' and 'P' keys
+xnoremap <expr> p 'pgv"'.v:register.'y`>'
+xnoremap <expr> P 'Pgv"'.v:register.'y`>'
+
+"" Auto-chmod and execute for shell and python files with <F5>
+"" Here '<C-R>=shellescape(@%, 1)<CR>' makes insert result of 'shellescape(@%, 1)'
+"" which parses current filename and escapes it for safe use in commandline
+autocmd FileType sh,python map <buffer> <F5> :w<CR>:!chmod ug+x <C-R>=shellescape(@%, 1)<CR> && sh -c ./<C-R>=shellescape(@%, 1)<CR><CR>
+autocmd FileType sh,python imap <buffer> <F5> <esc>:w<CR>:!chmod ug+x <C-R>=shellescape(@%, 1)<CR> && sh -c ./<C-R>=shellescape(@%, 1)<CR><CR>
+
+"autocmd FileType python map <buffer> <F5> :w<CR>:exec '!python3' shellescape(@%, 1)<CR>
+"autocmd FileType python imap <buffer> <F5> <esc>:w<CR>:exec '!python3' shellescape(@%, 1)<CR>
+
+"" Session save and restore (4 sessions)
+"" Sets variable for session file path prefix
+let session_file = "~/.local/state/nvim/sessions/session"
+
+"" Mapping <F9>, <F10>, <F11>, <F12> keys to save sessions (1-4)
+nnoremap <S-F9> :execute "mksession! " . session_file . "1.vim"<CR>
+inoremap <S-F9> <esc>:execute "mksession! " . session_file . "1.vim"<CR>a
+nnoremap <S-F10> :execute "mksession! " . session_file . "2.vim"<CR>
+inoremap <S-F10> <esc>:execute "mksession! " . session_file . "2.vim"<CR>a
+nnoremap <S-F11> :execute "mksession! " . session_file . "3.vim"<CR>
+inoremap <S-F11> <esc>:execute "mksession! " . session_file . "3.vim"<CR>a
+nnoremap <S-F12> :execute "mksession! " . session_file . "4.vim"<CR>
+inoremap <S-F12> <esc>:execute "mksession! " . session_file . "4.vim"<CR>a
+
+"" Mapping <F9>, <F10>, <F11>, <F12> keys to save sessions (1-4) for alacritty terminal
+nnoremap <F21> :execute "mksession! " . session_file . "1.vim"<CR>
+inoremap <F21> <esc>:execute "mksession! " . session_file . "1.vim"<CR>a
+nnoremap <F22> :execute "mksession! " . session_file . "2.vim"<CR>
+inoremap <F22> <esc>:execute "mksession! " . session_file . "2.vim"<CR>a
+nnoremap <F23> :execute "mksession! " . session_file . "3.vim"<CR>
+inoremap <F23> <esc>:execute "mksession! " . session_file . "3.vim"<CR>a
+nnoremap <F24> :execute "mksession! " . session_file . "4.vim"<CR>
+inoremap <F24> <esc>:execute "mksession! " . session_file . "4.vim"<CR>a
+
+"" Load sessions with <F9>, <F10>, <F11>, <F12>
+nnoremap <F9> :execute "source " . session_file . "1.vim"<CR>
+inoremap <F9> <esc>:execute "source " . session_file . "1.vim"<CR>
+nnoremap <F10> :execute "source " . session_file . "2.vim"<CR>
+inoremap <F10> <esc>:execute "source " . session_file . "2.vim"<CR>
+nnoremap <F11> :execute "source " . session_file . "3.vim"<CR>
+inoremap <F11> <esc>:execute "source " . session_file . "3.vim"<CR>
+nnoremap <F12> :execute "source " . session_file . "4.vim"<CR>
+inoremap <F12> <esc>:execute "source " . session_file . "4.vim"<CR>
+
+"" Save the file with 'WW' (same as :w) 
+nnoremap WW :w<CR>
+
+" ############################
+" ###### OTHER SETTINGS ######
+" ############################
+
+"" Always jump to the last known cursor position after opening a file
+autocmd BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$") | exe "normal g`\"" | endif
+
+"" Update terminal size on VimEnter
+autocmd VimEnter * :silent exec "!kill -s SIGWINCH $PPID"
+"" After loading a session, equalize window sizes
+autocmd SessionLoadPost * wincmd =
+
+"" Disable readonly (ro) format options for all file types (off auto comments)
+autocmd FileType * setlocal formatoptions-=ro
