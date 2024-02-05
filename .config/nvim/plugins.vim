@@ -60,6 +60,9 @@ inoremap <F7> <esc>:NeomakeEnable<CR>:call neomake#configure#automake('nrwi', 50
 " Shift + F7 key disables automake
 nnoremap <S-F7> :NeomakeDisable<CR>:NeomakeClean<CR>
 inoremap <S-F7> <esc>:NeomakeDisable<CR>:NeomakeClean<CR>a
+" Shfit + <F7> for alacritty and gnome-terminal
+nnoremap <F19> :NeomakeDisable<CR>:NeomakeClean<CR>
+inoremap <F19> <esc>:NeomakeDisable<CR>:NeomakeClean<CR>a
 
 " ----- jedi-vim -----
 " F8 activates Jedi Python LSP
@@ -75,6 +78,8 @@ autocmd FileType python imap <F8> <ESC>:JediClearCache<CR>a
 " Ctrl+T, Ctrl+X, or Ctrl+V to open file in a new tab, split, or vsplit
 nnoremap <silent> <F2> :Files<CR>
 nnoremap <silent> <S-F2> :Buffers<CR>
+" Shift + <F2> for alacritty and gnome-terminal
+nnoremap <silent> <F14> :Buffers<CR>
 " Sets the size of the FZF window
 let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6  }  }
 " Sets the size and position of the preview area
