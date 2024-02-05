@@ -94,7 +94,7 @@ autocmd FileType sh,python imap <buffer> <F5> <esc>:w<CR>:!chmod ug+x <C-R>=shel
 " Sets variable for session file path prefix
 let session_file = "~/.local/state/nvim/sessions/session"
 
-" Mapping <F9>, <F10>, <F11>, <F12> keys to save sessions (1-4)
+" Mapping Shift + <F9>, <F10>, <F11>, <F12> keys to save sessions (1-4)
 nnoremap <S-F9> :execute "mksession! " . session_file . "1.vim"<CR>
 inoremap <S-F9> <esc>:execute "mksession! " . session_file . "1.vim"<CR>a
 nnoremap <S-F10> :execute "mksession! " . session_file . "2.vim"<CR>
@@ -104,7 +104,7 @@ inoremap <S-F11> <esc>:execute "mksession! " . session_file . "3.vim"<CR>a
 nnoremap <S-F12> :execute "mksession! " . session_file . "4.vim"<CR>
 inoremap <S-F12> <esc>:execute "mksession! " . session_file . "4.vim"<CR>a
 
-" Mapping <F9>, <F10>, <F11>, <F12> keys to save sessions (1-4) for alacritty terminal
+" Mapping Shift + <F9>, <F10>, <F11>, <F12> keys to save sessions (1-4) for alacritty terminal
 nnoremap <F21> :execute "mksession! " . session_file . "1.vim"<CR>
 inoremap <F21> <esc>:execute "mksession! " . session_file . "1.vim"<CR>a
 nnoremap <F22> :execute "mksession! " . session_file . "2.vim"<CR>
