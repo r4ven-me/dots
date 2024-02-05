@@ -8,7 +8,7 @@ set mouse=a                 " Enable mouse support
 set encoding=utf-8          " Set character encoding to UTF-8
 set number                  " Display line numbers
 set scrolloff=7             " Keep at least 7 lines visible above/below cursor
-"set noshowmode              " Disable mode display
+set noshowmode              " Disable mode display
 set cursorline              " Highlight the current line
 set ignorecase              " Enable case-insensitive searching
 set smartcase               " Use smart case for searching
@@ -19,9 +19,9 @@ set shiftwidth=4            " Set indentation width to 4 spaces
 set expandtab               " Use spaces instead of tabs for indentation
 set autoindent              " Enable automatic indentation
 set fileformat=unix         " Set file format to Unix (LF line endings)
-"set showtabline=2           " Always show tabline
+set showtabline=2           " Always show tabline
 set clipboard=unnamedplus   " Use system clipboard
-"set termguicolors           " Enable true color support
+set termguicolors           " Enable true color support
 set splitbelow              " Split new windows below the current one
 set splitright              " Split new windows to the right of the current one
 set equalalways             " Keep window sizes equal
@@ -141,3 +141,11 @@ autocmd SessionLoadPost * wincmd =
 
 " Disable readonly (ro) format options for all file types (off auto comments)
 autocmd FileType * setlocal formatoptions-=ro
+
+" Auto install plugin-manager: vim-plug
+let data_dir = has('nvim') ? stdpath('data') . '/site' : '~/.vim'
+if empty(glob(data_dir . '/autoload/plug.vim'))
+    silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+else
+    runtime plugins.vim
+endif
