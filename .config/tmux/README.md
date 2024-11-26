@@ -1,5 +1,16 @@
 ![Tmux - installation and customization + Nord theme](https://r4ven.me/wp-content/uploads/2024/11/13-33-09_23-11-2024.resized2.png)
 
+- [Tmux – installation and customization + Nord theme](#tmux--installation-and-customization--nord-theme)
+    - [Greetings!](#greetings)
+  - [Preface](#preface)
+  - [Installing Tmux](#installing-tmux)
+  - [Downloading the config and running](#downloading-the-config-and-running)
+  - [Configuration Description](#configuration-description)
+    - [What does this configuration add/change?](#what-does-this-configuration-addchange)
+  - [Basic Tmux Hotkeys](#basic-tmux-hotkeys)
+  - [Custom Tmux Hotkeys](#custom-tmux-hotkeys)
+  - [Useful materials](#useful-materials)
+
 # Tmux – installation and customization + Nord theme
 
 ### Greetings!
@@ -7,8 +18,6 @@
 I will demonstrate the installation and customization of the most popular tool in terminal multiplexer category - **Tmux** 🪟.
 
 The demonstration given in this article was performed in the [**Linux Mint 22**](https://r4ven.me/it-razdel/instrukcii/nativnoe-obnovlenie-s-linux-mint-21-3-do-linux-mint-22/) distribution environment with **Tmux** version **3.4** ✍️.
-
-[[_TOC_]]
 
 ## Preface
 
@@ -185,11 +194,6 @@ Some keyboard shortcuts have been slightly expanded. For more details, see below
 - cleaning old session files older than 3 days (in `~/.local/share/tmux/resurrect/`);
 - The recovery system for Neovim is used through the session mechanism.
 
-### Contents of tmux.conf file
-
-In order not to make a canvas out of the article, I hid the contents of the config file under a spoiler🏎.
-
-For better understanding, all parameters are commented in Russian😌:
 ## Basic Tmux Hotkeys
 
 Below are the most commonly used basic tmux commands/keyboard shortcuts. If you plan to work in the tmux environment regularly, I highly recommend you memorize them🤯.
