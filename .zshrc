@@ -150,6 +150,14 @@ if [[ -x $(which fzf) ]]; then
         --color=marker:#a3be8b,spinner:#b48dac,header:#a3be8b'
 fi
 
+# Defining a variable with the name of the utility: bat or batcat
+if [[ -e $(which batcat) ]]; then
+    export bat="batcat"
+    alias bat="batcat"
+elif [[ -e $(which bat) ]]; then
+    export bat="bat"
+fi
+
 # bat configuration
 if [[ -n $bat ]]; then
     export BAT_THEME="Nord"
