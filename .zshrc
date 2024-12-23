@@ -99,6 +99,8 @@ if [[ -d "$ZSH_CUSTOM" && -x $(which git)  ]]; then
     if [[ ! -d "${ZSH_CUSTOM}"/plugins/fast-syntax-highlighting ]]; then
         git clone https://github.com/zdharma-continuum/fast-syntax-highlighting \
             "${ZSH_CUSTOM}"/plugins/fast-syntax-highlighting
+        
+        reset
     fi
 fi
 
@@ -142,6 +144,7 @@ fi
 
 # Configure FZF with Nord theme colors
 if [[ -x $(which fzf) ]]; then
+    export FZF_DEFAULT_OPTS="--exact"
     export FZF_DEFAULT_OPTS=$FZF_DEFAULT_OPTS'
         --color=fg:#e5e9f0,bg:#3b4252,hl:#81a1c1
         --color=fg+:#e5e9f0,bg+:#3b4252,hl+:#81a1c1
