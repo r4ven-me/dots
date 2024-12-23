@@ -1,8 +1,9 @@
-#=======================================
+#============================================
 # Desc: .zshrc config for oh-my-zsh 
 # Author: Ivan Cherniy
-# Site: https://r4ven.me
-#=======================================
+# Main site: https://r4ven.me
+# Config note: https://r4ven.me/zshrc-config
+#============================================
 
 #######################
 ### COMMON SETTINGS ###
@@ -22,17 +23,17 @@ export TERM="xterm-256color"               # Set terminal type for better color 
 # Oh-my-zsh theme selection
 # Find more themes: https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
 if [[ -n "$DISPLAY" || $(tty) == /dev/pts* ]]; then
-    ZSH_THEME="agnoster"                    # Fallback to default "agnoster" theme
-    export VIRTUAL_ENV_DISABLE_PROMPT=1     # Disable default virtualenv prompt
+    ZSH_THEME="agnoster"                   # Use this theme in GUI mode
+    export VIRTUAL_ENV_DISABLE_PROMPT=1    # Disable default virtualenv prompt
 else
-    ZSH_THEME="dpoggi"                      # Use the 'noicon' theme in other cases, e.g. in console (tty)
+    ZSH_THEME="dpoggi"                     # Use the 'noicon' theme in other cases, e.g. in console (tty)
 fi
 
 # Powerlevel10k theme (requires installation)
 # https://github.com/romkatv/powerlevel10k
 # ZSH_THEME="powerlevel10k/powerlevel10k"
 
-DISABLE_AUTO_UPDATE="true"                  # Disable automatic updates for Oh My Zsh
+DISABLE_AUTO_UPDATE="true"                  # Disable automatic updates for Oh My Zsh (cmd: omz update)
 COMPLETION_WAITING_DOTS="true"              # Show dots while completing commands
 
 # Command History Configuration
@@ -62,7 +63,7 @@ plugins=(
     zsh-completions            # Additional completion scripts (Tab)
     zsh-autosuggestions        # Suggest commands based on history
     fast-syntax-highlighting   # Syntax highlighting for commands
-    history-substring-search   # Search history with substring matches
+    history-substring-search   # Search history with substring matches (up/down arrows)
 )
 
 # Example to install custom plugins manually:
@@ -156,7 +157,8 @@ elif [[ -e $(which bat) ]]; then
     export bat="bat"
 fi
 
-# bat configuration
+# Usage bat instead of cat, less, man, --help, tail -f
+# See more: https://r4ven.me/bat-exa-config
 if [[ -n $bat ]]; then
     export COLORTERM="truecolor"
     export BAT_THEME="Nord"
@@ -164,7 +166,7 @@ if [[ -n $bat ]]; then
     export MANROFFOPT="-c"  # Disabling line wrapping in man
     alias cat="$bat --style=plain --paging=never"
     alias less="$bat --paging=always"
-    if [[ $SHELL == *zsh ]]; then # global alias --help if zsh
+    if [[ $SHELL == *zsh ]]; then # global alias "--help" if zsh
         alias -g -- --help='--help 2>&1 | $bat --language=help --style=plain'
     fi
     help() { "$@" --help 2>&1 | $bat --language=help --style=plain; }
@@ -173,6 +175,7 @@ if [[ -n $bat ]]; then
 fi
 
 # Usage exa instead of ls
+# See more: https://r4ven.me/bat-exa-config
 if [[ -x $(which exa) ]]; then
     if [[ -n "$DISPLAY" || $(tty) == /dev/pts* ]]; then # display icons if pseudo terminal
         alias ls="exa --header --icons"
@@ -190,11 +193,11 @@ fi
 
 # APT
 if [[ -x $(which apt) ]]; then
-    alias U="sudo apt update"
-    alias UP="sudo apt upgrade"
-    alias R="sudo apt autoremove"
-    alias I="sudo apt install"
-    alias UI="sudo apt update && sudo apt install"
+    alias AU="sudo apt update"
+    alias AUP="sudo apt upgrade"
+    alias AR="sudo apt autoremove"
+    alias AI="sudo apt install"
+    alias AUI="sudo apt update && sudo apt install"
 fi
 
 # Ansible
