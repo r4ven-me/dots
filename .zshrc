@@ -16,7 +16,7 @@ export PATH
 
 export ZSH="$HOME/.config/oh-my-zsh"       # Path to Oh My Zsh installation
 export ZSH_CUSTOM="$ZSH/custom"            # Path to Oh My Zsh custom dir
-export TERM=xterm-256color                 # Set terminal type for better color support
+export TERM="xterm-256color"               # Set terminal type for better color support
 # export TERM="screen-256color"            # Alternative terminal type (commented out)
 
 # Oh-my-zsh theme selection
@@ -99,8 +99,6 @@ if [[ -d "$ZSH_CUSTOM" && -x $(which git)  ]]; then
         git clone https://github.com/zdharma-continuum/fast-syntax-highlighting \
             "${ZSH_CUSTOM}"/plugins/fast-syntax-highlighting
     fi
-
-    reset
 fi
 
 ######################
@@ -160,6 +158,7 @@ fi
 
 # bat configuration
 if [[ -n $bat ]]; then
+    export COLORTERM="truecolor"
     export BAT_THEME="Nord"
     export MANPAGER="sh -c 'col -bx | $bat --language=man --style=plain'"  # Command to view man pages
     export MANROFFOPT="-c"  # Disabling line wrapping in man
