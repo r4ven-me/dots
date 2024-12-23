@@ -1,25 +1,29 @@
-####################
-### SHELL CONFIG ###
-####################
+#=======================================
+# Desc: .zshrc config for oh-my-zsh 
+# Author: Ivan Cherniy
+# Site: https://r4ven.me
+#=======================================
+
+#######################
+### COMMON SETTINGS ###
+#######################
 
 # Add custom directories to the PATH variable
-export PATH=$HOME/.bin:$HOME/.local/bin:/usr/local/bin:$PATH
+if [[ -d "$HOME/bin" ]]; then PATH="$HOME/bin:$PATH"; fi
+if [[ -d "$HOME/.bin" ]]; then PATH="$HOME/.bin:$PATH"; fi
+if [[ -d "$HOME/.local/bin" ]]; then PATH="$HOME/.local/bin:$PATH"; fi
+export PATH
+
 export ZSH="$HOME/.config/oh-my-zsh"       # Path to Oh My Zsh installation
 export ZSH_CUSTOM="$ZSH/custom"            # Path to Oh My Zsh custom dir
 export TERM=xterm-256color                 # Set terminal type for better color support
 # export TERM="screen-256color"            # Alternative terminal type (commented out)
 
-# Configure FZF colors for better aesthetics
-export FZF_DEFAULT_OPTS=$FZF_DEFAULT_OPTS'
-    --color=fg:#e5e9f0,bg:#3b4252,hl:#81a1c1
-    --color=fg+:#e5e9f0,bg+:#3b4252,hl+:#81a1c1
-    --color=info:#eacb8a,prompt:#bf6069,pointer:#b48dac
-    --color=marker:#a3be8b,spinner:#b48dac,header:#a3be8b'
-
-# Theme selection
+# Oh-my-zsh theme selection
 # Find more themes: https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-if [[ -n "$DISPLAY" || $(tty) == /dev/pts* || -n "$SSH_CONNECTION" ]]; then
+if [[ -n "$DISPLAY" || $(tty) == /dev/pts* ]]; then
     ZSH_THEME="agnoster"                    # Fallback to default "agnoster" theme
+    export VIRTUAL_ENV_DISABLE_PROMPT=1     # Disable default virtualenv prompt
 else
     ZSH_THEME="dpoggi"                      # Use the 'noicon' theme in other cases, e.g. in console (tty)
 fi
@@ -43,6 +47,10 @@ setopt histignorespace                      # Ignore commands starting with a sp
 # Enable vi-mode for the command line (default is emacs mode)
 # set -o vi
 
+###############
+### PLUGINS ###
+###############
+
 plugins=(
     fzf                        # Fuzzy finder integration (Ctrl+r)
     git                        # Git aliases and functions
@@ -60,8 +68,13 @@ plugins=(
 # Example to install custom plugins manually:
 # git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-completions
 
+# Autoinstall oh-my-zsh framework
+if [[  ! -d "$ZSH" && -x $(which git) ]]; then
+    git clone https://github.com/ohmyzsh/ohmyzsh.git "$ZSH"
+fi
+
 # Autoinstall selected plugins
-if [[ -x $(which git) && -d "${ZSH_CUSTOM}" ]]; then
+if [[ -d "$ZSH_CUSTOM" && -x $(which git)  ]]; then
     if [[ ! -d "${ZSH_CUSTOM}"/plugins/cmdtime ]]; then
         git clone https://github.com/tom-auger/cmdtime \
             "${ZSH_CUSTOM}"/plugins/cmdtime
@@ -86,68 +99,90 @@ if [[ -x $(which git) && -d "${ZSH_CUSTOM}" ]]; then
         git clone https://github.com/zdharma-continuum/fast-syntax-highlighting \
             "${ZSH_CUSTOM}"/plugins/fast-syntax-highlighting
     fi
+
+    reset
 fi
 
-source "${ZSH}"/oh-my-zsh.sh                    # Init Oh My Zsh framework
+######################
+### INIT OH-MY-ZSH ###
+######################
+
+source "${ZSH}"/oh-my-zsh.sh                # Init Oh My Zsh framework
 
 autoload -Uz compinit
 compinit                                    # Initialize and enable completion system
 
-export CLICOLOR=1                           # Enable colored output for `ls`
-export LSCOLORS=GxFxCxDxBxegedabagaced      # Color scheme for `ls`
-export VIRTUAL_ENV_DISABLE_PROMPT=1         # Disable default virtualenv prompt
-
 if [[ -r "${HOME}"/.profile ]]; then
-    . "${HOME}"/.profile                        # Source '.profile' if it exists
+    source "${HOME}"/.profile               # Source '.profile' if it exists
 fi
 
-###############
-### ALIASES ###
-###############
+######################
+### APPS AND UTILS ###
+######################
 
 # Python
 alias python="python3"
 
 # Network
 alias p8="ping -c3 8.8.8.8"
-alias ip="ip -c"
+alias ip="ip --color"
 
-# Editor
-if [[ -e $(which nvim) ]]; then
+# Configure code editor
+if [[ -x $(which nvim) ]]; then
+    export EDITOR="$(which nvim)"
+    export VISUAL="$(which nvim)"
     alias vim="nvim"
     alias n="nvim"
     alias N="sudo nvim"
+elif [[ -x $(which vim) ]]; then
+    export EDITOR="$(which vim)"
+    export VISUAL="$(which vim)"
+    alias v="vim"
+    alias V="sudo vim"
 fi
 
-# exa instead ls
-if [[ -e $(which exa) ]]; then
-    alias ls="exa --icons"
-    alias ll="exa -la --icons"
-    alias l="exa -lah --icons"
-    alias lm="exa -la --sort=modified --icons"
-    alias lmm="exa -lbhHigUmuSa --sort=modified --time-style=long-iso --icons"
-    alias lt="exa --tree --icons"
-    alias lr="exa --recurse --icons"
-    alias lg="exa -lh --git --sort=modified --icons"
+# Configure FZF with Nord theme colors
+if [[ -x $(which fzf) ]]; then
+    export FZF_DEFAULT_OPTS=$FZF_DEFAULT_OPTS'
+        --color=fg:#e5e9f0,bg:#3b4252,hl:#81a1c1
+        --color=fg+:#e5e9f0,bg+:#3b4252,hl+:#81a1c1
+        --color=info:#eacb8a,prompt:#bf6069,pointer:#b48dac
+        --color=marker:#a3be8b,spinner:#b48dac,header:#a3be8b'
 fi
 
-# bat* utils
-if [[ -e $(which batman) ]]; then alias man="batman"; fi
-
-if [[ -e $(which batwatch) ]]; then
-    alias watch="batwatch --interval=1 --command --color"
+# bat configuration
+if [[ -n $bat ]]; then
+    export BAT_THEME="Nord"
+    export MANPAGER="sh -c 'col -bx | $bat --language=man --style=plain'"  # Command to view man pages
+    export MANROFFOPT="-c"  # Disabling line wrapping in man
+    alias cat="$bat --style=plain --paging=never"
+    alias less="$bat --paging=always"
+    if [[ $SHELL == *zsh ]]; then # global alias --help if zsh
+        alias -g -- --help='--help 2>&1 | $bat --language=help --style=plain'
+    fi
+    help() { "$@" --help 2>&1 | $bat --language=help --style=plain; }
+    tailf() { tail -f "$@" | $bat --paging=never --language=log; }
+    batdiff() { git diff --name-only --relative --diff-filter=d | xargs $bat --diff; }
 fi
 
-if [[ -e $(which bat) ]]; then
-    alias cat="bat -p -P"
-    alias less="bat --paging=always"
-elif [[ -e $(which batcat) ]]; then
-    alias cat="batcat -p -P"
-    alias less="batcat --paging=always"
+# Usage exa instead of ls
+if [[ -x $(which exa) ]]; then
+    if [[ -n "$DISPLAY" || $(tty) == /dev/pts* ]]; then # display icons if pseudo terminal
+        alias ls="exa --header --icons"
+    else
+        alias ls="exa --header"
+    fi
+    alias ll="ls --long"
+    alias l="ls --long --all --header"
+    alias lm="ls --long --all --sort=modified"
+    alias lmm="ls -lbHigUmuSa --sort=modified --time-style=long-iso"
+    alias lt="ls --tree"
+    alias lr="ls --recurse"
+    alias lg="ls --long --git --sort=modified"
 fi
 
 # APT
-if [[ -e $(which apt) ]]; then
+if [[ -x $(which apt) ]]; then
     alias U="sudo apt update"
     alias UP="sudo apt upgrade"
     alias R="sudo apt autoremove"
@@ -157,15 +192,14 @@ fi
 
 # Ansible
 if [[ -e $(which ansible) ]]; then
-    ap() {
-        ansible-playbook ~/ansible/playbooks/"$@"
-    }
+    ap() { ansible-playbook ~/ansible/playbooks/"$@"; }
     alias ac="ansible-console"
 fi
 
 # Tmux
 if [[ -e $(which tmux) ]]; then
-    alias T="sudo tmux attach -t $(hostname | cut -d. -f1) || sudo tmux new -s $(hostname | cut -d. -f1)"
+    alias t="tmux attach -t Work || tmux new -s Work"
+    alias T="sudo tmux attach -t Work! || sudo tmux new -s Work!"
 fi
 
 ##############
