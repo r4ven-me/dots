@@ -110,8 +110,7 @@ fi
 
 source "${ZSH}"/oh-my-zsh.sh                # Init Oh My Zsh framework
 
-autoload -Uz compinit
-compinit                                    # Initialize and enable completion system
+autoload -Uz compinit && compinit           # Initialize and enable completion system
 
 if [[ -r "${HOME}"/.profile ]]; then
     source "${HOME}"/.profile               # Source '.profile' if it exists
@@ -181,12 +180,12 @@ fi
 # See more: https://r4ven.me/bat-exa-config
 if [[ -x $(which exa) ]]; then
     if [[ -n "$DISPLAY" || $(tty) == /dev/pts* ]]; then # display icons if pseudo terminal
-        alias ls="exa --header --icons"
+        alias ls="exa --group --header --icons"
     else
-        alias ls="exa --header"
+        alias ls="exa --group --header"
     fi
     alias ll="ls --long"
-    alias l="ls --long --all --header"
+    alias l="ls --long --all"
     alias lm="ls --long --all --sort=modified"
     alias lmm="ls -lbHigUmuSa --sort=modified --time-style=long-iso"
     alias lt="ls --tree"
