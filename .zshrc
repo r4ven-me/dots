@@ -214,6 +214,74 @@ if [[ -e $(which tmux) ]]; then
     alias T="sudo tmux attach -t Work! || sudo tmux new -s Work!"
 fi
 
+# Define the 'cmd' function, which exec cistom commands form list
+# It takes one argument - the command name and insert it to command line
+cmd() {
+    local cmd_name="${1}"
+    typeset -A cmd_list
+
+    # Associative array to store the list of commands
+    # Keys are command names, values are the actual commands
+    cmd_list=(
+        ps_zombie "ps -eo user,pid,ppid,state,comm | awk '\$4=="Z" {print \$3}'"
+        ps_top5_cpu "ps --sort=-%cpu -eo user,pid,ppid,state,comm | head -n6"
+        ps_top5_mem "ps --sort=-%mem -eo user,pid,ppid,state,comm | head -n6"
+        cron_add '{ crontab -l; echo "0 3 * * 0 ls -l &> dirs.txt"; } | crontab -'
+        du_top20 'du -h / 2> /dev/null | sort -rh | head -n 20'
+        df_80 "df -h | awk '\$5 ~ /^8[0-9]%/ {print $6}'"
+        git_init 'git init --initial-branch=main && git remote add origin ssh://git@gitea.bl4ck.r4ven.me:2222/lans/reponame.git'
+        journal_vacuum 'journalctl --vacuum-size=800M'
+        lsof_opened 'lsof +D /opt'
+        ossl_connect 'openssl s_client -connect r4ven.me:443'
+        ossl_info 'openssl x509 -in ./ca-cert.pem -text -noout'
+        ossl_encrypt_tar 'tar -czf - /var/log/apt | openssl enc -aes-256-cbc -pbkdf2 -e -out ./logs.tar.gz.enc'
+        ossl_decrypt_file 'openssl enc -aes-256-cbc -pbkdf2 -d -in ./logs.tar.gz.enc -out ./logs.tar.gz'
+        ss_listen "ss -tuln | awk '{print \$5}' | grep -Eo ':[0-9]+$' | sort -t: -k2 -n -u"
+        ipt_recent_icmp1 "iptables -A INPUT -p icmp --icmp-type echo-request -m recent --set --name PING_LIST"
+        ipt_recent_icmp2 "iptables -A INPUT -p icmp --icmp-type echo-request -m recent --update --seconds 10 --hitcount 5 --name PING_LIST -j DROP"
+        uptime_unix 'date -d "$(uptime -s)" +%s'
+        history_top10 "history | awk '{print \$2}' | sort | uniq -c | sort -rn | head"
+        urandom_str "cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1"
+        sed_replace "sed -i 's/old_text/new_text/g' file.txt"
+        find_chmod_d "find /path -type f -exec chmod 644 {} \\;"
+        find_chmod_f "find /path -type f -exec chmod 755 {} \\;"
+        tcpdump_dhost_dport "tcpdump -i any -nn -q dst host 10.11.12.13 and dst port 443"
+        tcpdump_stout "tcpdump -nn -i any host 10.11.12.13 >> ./tcpdump.txt"
+        tcpdump_wrtie_pacp "tcpdump -nn -i any host 10.11.12.13 -w ./tcpdump.pacp"
+        tcpdump_read_pcap "tcpdump -qns 0 -X -r ./tcpdump.pacp | less"
+
+    )
+
+    # Check if the command exists in the array, or if help is requested
+    if [[ -z ${cmd_list[$cmd_name]} || -z "$cmd_name" || "$cmd_name" == "-h" ]]; then
+        # Display the list of available commands
+        echo "AVAILABLE COMMANDS:\n"
+        printf "%-20s %s\n" "Key" "Command"
+        echo "----------------------------"
+        # Iterate over all keys in the array and display them
+        for key in "${(@k)cmd_list}"; do
+            printf "%-20s %s\n" "$key" "${cmd_list[$key]}"
+            # echo "------------------"
+        done
+        return 0
+    else
+        # If the command is found, insert it into the command line
+        print -zr "${cmd_list[$cmd_name]}"
+        return 0
+    fi
+}
+
+# Function for command autocompletion
+_cmd_completion() {
+    local -a keys
+    keys=($(cmd -h | awk 'NR>4 {print $1}'))  # Извлекаем ключи из вывода справки
+    compadd "$@" -- "${keys[@]}"
+}
+
+# Register the autocompletion function for the `cmd` command
+compdef _cmd_completion cmd
+
+
 ##############
 ### PROMPT ###
 ##############
