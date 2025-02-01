@@ -240,11 +240,11 @@ cmd() {
         ipt_recent_icmp1 "iptables -A INPUT -p icmp --icmp-type echo-request -m recent --set --name PING_LIST"
         ipt_recent_icmp2 "iptables -A INPUT -p icmp --icmp-type echo-request -m recent --update --seconds 10 --hitcount 5 --name PING_LIST -j DROP"
         uptime_unix 'date -d "$(uptime -s)" +%s'
-        history_top10 "history | awk '{print \$2}' | sort | uniq -c | sort -rn | head"
+        history_top10 "history | awk '{print \$4}' | sort | uniq -c | sort -rn | head"
         urandom_str "cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1"
         sed_replace "sed -i 's/old_text/new_text/g' file.txt"
         find_chmod_d "find /path -type f -exec chmod 644 {} \\;"
-        find_chmod_f "find /path -type f -exec chmod 755 {} \\;"
+        find_chmod_f "find /path -type d -exec chmod 755 {} \\;"
         tcpdump_dhost_dport "tcpdump -i any -nn -q dst host 10.11.12.13 and dst port 443"
         tcpdump_stout "tcpdump -nn -i any host 10.11.12.13 >> ./tcpdump.txt"
         tcpdump_wrtie_pacp "tcpdump -nn -i any host 10.11.12.13 -w ./tcpdump.pacp"
@@ -262,7 +262,7 @@ cmd() {
         for key in "${(@k)cmd_list}"; do
             printf "%-20s %s\n" "$key" "${cmd_list[$key]}"
             # echo "------------------"
-        done
+        done | sort
         return 0
     else
         # If the command is found, insert it into the command line
