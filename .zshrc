@@ -59,12 +59,17 @@ plugins=(
     docker                     # Docker command-line helper
     kubectl                    # Kubernetes command-line helper
     cmdtime                    # Measure time spent on commands
-    zsh-autopair               # Auto-close parentheses and quotes
     zsh-completions            # Additional completion scripts (Tab)
     zsh-autosuggestions        # Suggest commands based on history
     fast-syntax-highlighting   # Syntax highlighting for commands
     history-substring-search   # Search history with substring matches (up/down arrows)
 )
+
+# Plugin to auto-close parentheses and quotes
+# Fix: disable this plugin in MidnightCommander
+if ! [[ $(ps -o comm -h $PPID) =~ "^mc" ]]; then
+    plugins+=(zsh-autopair)
+fi
 
 # Example to install custom plugins manually:
 # git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-completions
