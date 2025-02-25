@@ -257,8 +257,8 @@ cmd() {
         icmp_ignore "echo 1 | sudo tee /proc/sys/net/ipv4/icmp_echo_ignore_all"
         docker_network "docker network create --opt com.docker.network.bridge.name=br-mynetwork --opt com.docker.network.enable_ipv6=false --driver bridge --subnet 172.22.23.0/24 --gateway 172.22.23.1 my_network"
         tcpdump_dhost_dport "sudo tcpdump -i any -nn -q dst host 10.11.12.13 and dst port 443"
-        tcpdump_wrtie_pacp "sudo tcpdump -nn -i any host 10.11.12.13 -w ./tcpdump.pacp"
-        tcpdump_read_pcap "sudo -u tcpdump tcpdump -qns 0 -X -r ./tcpdump.pacp | less"
+        tcpdump_wrtie_pacp "sudo tcpdump -nn -i any host 10.11.12.13 -w ./tcpdump.pcap"
+        tcpdump_read_pcap "sudo -u tcpdump tcpdump -qns 0 -X -r ./tcpdump.pcap | less"
 
     )
 
