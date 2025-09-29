@@ -1,0 +1,127 @@
+# Process Management
+[show top 5 cpu processes] ps --sort=-%cpu -eo user,pid,ppid,state,comm | head -n6
+[show top 5 mem processes] ps --sort=-%mem -eo user,pid,ppid,state,comm | head -n6
+[show process tree] ps -axf -eo user,pid,ppid,state,comm
+[show zombie parents] ps -eo user,pid,ppid,state,comm | awk '$4=="Z" {print $3}'
+[show parent command] ps -o pid,command --ppid 698
+[show systemd cgroups] systemd-cgls
+[show tree hierarchy] pstree -p -t -n -C age
+[list binaries of user processes] for pid in $(ps -u $USER -o pid); do exe=$(readlink -f /proc/$pid/exe 2>/dev/null); if [ "$exe" ]; then echo "$pid: $exe"; fi; done | awk '{print $2}' | sort -u
+
+# System Monitoring
+[show mount points >80%] df -h | awk '$5 ~ /^8[0-9]%/ {print $6}'
+[show disk usage top20] du -h / 2> /dev/null | sort -rh | head -n 20
+[show open files in dir] lsof +D /opt
+[show uptime as unixtime] date -d "$(uptime -s)" +%s
+[show top 10 bash history] history | awk '{print $2}' | sort | uniq -c | sort -rn | head
+[show swap usage processes] for file in /proc/*/status ; do awk '/VmSwap|Name/{printf $2 " " $3}END{ print ""}' $file; done | sort -k 2 -n -r | head -n 10
+[show swappiness value] cat /proc/sys/vm/swappiness
+[show OOM scores] printf "PID\tOOM Score\tOOM Adj\tCommand\n"; while read -r pid comm; do [ -f /proc/$pid/oom_score ] && [ $(cat /proc/$pid/oom_score) != 0 ] && printf "%d\t%d\t\t%d\t%s\n" "$pid" "$(cat /proc/$pid/oom_score)" "$(cat /proc/$pid/oom_score_adj)" "$comm"; done < <(ps -e -o pid= -o comm=) | sort -k 2nr
+[show iotop] iotop -o -P -d 5
+[grep IPs in log] grep -a -E '([0-9]{1,3}\.){3}[0-9]{1,3}' /var/log/nginx/access.log
+
+# Scheduling
+[add cron job] { crontab -l; echo "0 3 * * 0 ls -l &> dirs.txt"; } | crontab -
+
+# Networking
+[list listening ports] ss -tuln | awk '{print $5}' | grep -Eo ':[0-9]+$' | sort -t: -k2 -n -u
+[ping ignore icmp] echo 1 | sudo tee /proc/sys/net/ipv4/icmp_echo_ignore_all
+[iptables track icmp] iptables -A INPUT -p icmp --icmp-type echo-request -m recent --set --name PING_LIST
+[iptables limit icmp] iptables -A INPUT -p icmp --icmp-type echo-request -m recent --update --seconds 10 --hitcount 5 --name PING_LIST -j DROP
+[nftables replace rule] sudo nft replace rule inet filter input handle 23 'tcp dport 2222 accept comment "Allow SSH"'
+[check port via curl] curl -v telnet://10.11.12.13:1234
+[check port via echo] echo > /dev/tcp/r4ven.me/443 && echo "open" || echo "unavailable"
+[check port via openssl] openssl s_client -connect r4ven.me:443
+
+# Packet Capture
+[capture dst host:port] tcpdump -i any -nn -q dst host 10.11.12.13 and dst port 443
+[capture packets to file] sudo tcpdump -nn -i any host 10.11.12.13 -w ./tcpdump.pcap
+[capture packets to stdout] sudo tcpdump -nn -i any host 10.11.12.13 >> ./tcpdump.txt
+[read pcap dump] sudo tcpdump -qns 0 -X -r ./tcpdump.pcap | less
+
+# Encryption / Certificates
+[encrypt tar with openssl] tar -czf - /var/log/apt | openssl enc -aes-256-cbc -pbkdf2 -e -out ./logs.tar.gz.enc
+[decrypt file with openssl] openssl enc -aes-256-cbc -pbkdf2 -d -in ./logs.tar.gz.enc -out ./logs.tar.gz
+[openssl connect] openssl s_client -connect r4ven.me:443
+[openssl show cert remote] openssl s_client -connect r4ven.com:443 < /dev/null 2> /dev/null | openssl x509 -text
+[openssl show cert alt] openssl s_client -connect r4ven.me:443 -servername r4ven.me < /dev/null 2>/dev/null | openssl x509 -text
+[openssl show local cert] openssl x509 -in ./ca-cert.pem -text -noout
+[gpg encrypt file] gpg --batch --passphrase-file /path/to/password_file --symmetric --cipher-algo AES256 example.txt
+
+# DNS / Network Tools
+[dig default] dig r4ven.me +short +answer +identify
+[dig alt ns] dig @8.8.8.8 r4ven.me +short +answer +identify
+[nmap tcp port check] nmap 10.11.12.13 -p 22
+[nmap udp port check] nmap -sU 10.11.12.13 -p 53
+
+# Docker
+[docker network create] docker network create --opt com.docker.network.bridge.name=br-monitoring --opt com.docker.network.enable_ipv6=false --driver bridge --subnet 172.22.22.0/24 --gateway 172.22.22.1 monitoring_network
+[docker network connect] docker run -it --rm --network swarm_network alpine sh
+[docker build image] docker build -t r4venme/test .
+[docker build multiarch] docker buildx create --use && docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t r4venme/test:1.0 .
+[docker multitool container] docker run --rm -it --network=container:test --pid container:test wbitt/network-multitool:alpine-extra bash
+
+# Git
+[git init repo] git init --initial-branch=main && git remote add origin ssh://git@github.com/r4ven-me/reponame.git
+[git init with config] git init --initial-branch=main && git config user.name "Ivan Cherniy" && git config user.email "kar-kar@r4ven.me" && git remote add origin ssh://git@github.com/r4ven-me/reponame.git
+[git push changes] git add . && git commit -m 'upd' && git push
+
+# File Management
+[replace text inplace] sed -i.bak 's/old_text/new_text/g' file.txt
+[find chmod files] find /path -type f -exec chmod 644 {} \;
+[find chmod dirs] find /path -type d -exec chmod 755 {} \;
+[set ACL for user] setfacl -m u:ivan:rwx /opt/mydata
+
+# Web
+[curl download file] curl -fsSL https://raw.githubusercontent.com/r4ven-me/dots/main/.zshrc -o ~/.zshrc
+[curl trace request] curl --trace-ascii trace.txt r4ven.me
+
+# Users and groups
+[system group add] addgroup --system --gid 1995 zabbix
+[system user add] adduser --system --gecos 'Zabbix monitoring system' --disabled-password --uid 1997 --ingroup zabbix --shell /sbin/nologin --home /opt/zabbix/zabbix_data zabbix
+
+# Systemd
+[systemd edit unit] systemctl edit --full --force unitname.service
+[systemd show slice] systemctl show system.slice
+[systemd show unit params] systemctl show unit_name
+[systemd status check] systemctl is-active --quiet cron
+[systemd debug restart] sudo SYSTEMD_LOG_LEVEL=debug systemctl restart systemd-networkd
+[systemd list cgroups] sudo systemd-cgls
+[systemd top] sudo systemd-cgtop -d 3
+
+# Sysrq
+[sysrq reboot] echo b > /proc/sysrq-trigger
+[sysrq help] echo h | sudo tee /proc/sysrq-trigger | grep 'sysrq: HELP' /var/log/kern.log
+
+# Ansible
+[ansible get facts] ansible debian12-vpn -m setup -a 'filter=os_family,distribution_version'
+[ansible run with vars] ansible-playbook playbook.yml -e 'user_name=root' -e 'user_home=/root'
+[ansible start openarena] ansible debian12-vpn -b -m shell -a 'systemctl start service_name'
+[ansible stop openarena] ansible debian12-vpn -b -m shell -a 'systemctl stop service_name'
+[ansible start teamspeak] ansible debian12-vpn -b -m shell -a 'systemctl start service_name'
+[ansible stop teamspeak] ansible -m shell -a 'systemctl stop teamspeak' debian12-vpn -b
+
+# Asciinema
+[record terminal session] asciinema rec demo.cast
+[convert cast to gif] agg demo.cast demo.gif --theme nord --font-family 'Hack Nerd Font Mono' --line-height 1.3 --font-size 18
+
+# Proc
+[strace exec command] strace -f -e execve ls -l
+[strace attach pid] strace -p 123
+[show process env] sudo cat /proc/<pid>/environ | xargs -0 -n1
+
+# Logging
+[logging all output] exec > >(tee >(logger -t $(basename "${BASH_SOURCE[0]}")) | while IFS= read -r line; do echo "$(date +"[%Y-%m-%d %H:%M:%S.%3N]") - $line"; done | tee -a "${BASH_SOURCE[0]%.*}.log") 2>&1
+
+# SSH
+[port forwarding] ssh -q -f -N -L 127.0.0.1:5432:localhost:5432 ivan@test.r4ven.me
+[port forwarding temp] ssh -q -f -L 127.0.0.1:5432:localhost:5432 test.r4ven.me sleep 60
+[port forwarding temp full] ssh -q -f -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ExitOnForwardFailure=yes -L 127.0.0.1:5432:localhost:5432 test.r4ven.me -p 2222 -l ivan -i ~/.ssh/id_ed25519_test sleep 60
+[reverse port forwarding] ssh -q -f -N -R 127.0.0.1:4443:localhost:5001 ivan@test.r4ven.me
+
+# Misc
+[generate random string] cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1
+
+# Test Commands
+[test command 1] echo test1
+[test command 2] echo test2

@@ -53,27 +53,21 @@ Tmux is almost always available in the standard repositories, and many Linux [di
 Open the terminal and execute:
 
 ```bash
-sudo apt update && sudo apt install -y curl git xclip tmux
+sudo apt update && sudo apt install -y git xclip fzf tmux
 ```
 
-- `curl`– utility for interaction with the web (needed for downloading the config);
 - `git`– version control system and utility of the same name for working with git [repositories](https://r4ven.me/it-razdel/slovarik/repozitorij-programmnogo-obespecheniya/) (needed for installing third-party plugins);
 - `xclip`– a clipboard management utility in Xorg [desktop](https://r4ven.me/it-razdel/slovarik/okruzhenie-rabochego-stola/) systems, usually pre-installed (if you are installing tmux on a system without a gui, you don’t need to install it);
-- `tmux`– the terminal multiplexer itself;
-
-[![](https://r4ven.me/wp-content/uploads/2024/11/image-46.png)](https://r4ven.me/wp-content/uploads/2024/11/image-46.png)
+- `fzf` - fuzzy finder, required for the tmux-fzf plugin. It adds functionality for quickly launching long commands and creating SSH sessions in adjacent tmux panes;
+- `tmux`– the terminal multiplexer itself.
 
 ## Downloading the config and running
 
-Now let's use the utility `curl`to download the Tmux configuration file from my [GitHub](https://github.com/r4ven-me/dots/blob/main/.config/tmux/tmux.conf) 😇 repository:
+Now let's use the utility `git`to download the Tmux configuration files from this GitHub 😇 repository:
 
 ```bash
-curl --create-dirs -fLo \
-    ~/.config/tmux/tmux.conf \
-    https://raw.githubusercontent.com/r4ven-me/dots/main/.config/tmux/tmux.conf
+git clone https://github.com/r4ven-me/tmux.git ~/.config/tmux
 ```
-
-[![](https://r4ven.me/wp-content/uploads/2024/11/image-45.png)](https://r4ven.me/wp-content/uploads/2024/11/image-45.png)
 
 All that's left is to launch Tmux😳. The first launch will take some time⏳, because the plugin manager will be downloaded and then the plugins themselves will be downloaded using this manager.
 
@@ -90,8 +84,6 @@ Where:
 - `new`– command to create a new session;
 - `-s`– key for specifying the session name;
 - `Work`– arbitrary session name.
-
-[![](https://r4ven.me/wp-content/uploads/2024/11/image-47.png)](https://r4ven.me/wp-content/uploads/2024/11/image-47.png)
 
 It should look something like this:
 
@@ -146,7 +138,7 @@ Now you can connect to an existing session named **Work** using a single letter 
 
 **General settings📖:**
 
-- 256 colors support enabled: `screen-256color`;
+- 256 colors support enabled: `tmux-256color`;
 - TrueColor support is enabled for more accurate color display;
 - windows are numbered from 1, not 0 ( `base-index 1`);
 - panels in windows are also numbered starting from 1 ( `pane-base-index 1`);
@@ -173,7 +165,7 @@ Now you can connect to an existing session named **Work** using a single letter 
 
 **Keyboard shortcuts🎹:**
 
-Some keyboard shortcuts have been slightly expanded. For more details, see below: [Item 6. Custom Tmux hotkeys](https://r4ven.me/it-razdel/poleznoe-po/tmux-ustanovka-i-kastomizaciya-nord-theme/#%D0%9A%D0%B0%D1%81%D1%82%D0%BE%D0%BC%D0%BD%D1%8B%D0%B5_%D0%B3%D0%BE%D1%80%D1%8F%D1%87%D0%B8%D0%B5_%D0%BA%D0%BB%D0%B0%D0%B2%D0%B8%D1%88%D0%B8_Tmux) .
+Some keyboard shortcuts have been slightly expanded. For more details, see below: "Item 6. Custom Tmux hotkeys".
 
 **List of plugins📋:**
 
@@ -293,6 +285,16 @@ Added/changed commands/keys from my config.
     - shows a message about manual saving;
 2. `prefix+F6`:
     - loads a saved state from a file `main.txt`.
+
+**FZF: search and insert long command from a list** :
+- `prefix+Ctrl+b`
+![](https://r4ven.me/wp-content/uploads/2025/06/tmux.gif)
+
+
+**FZF: search and run SSH session with hosts from `~/.ssh/config`** :
+- `prefix+Shift+b`
+![](https://r4ven.me/wp-content/uploads/2025/06/tmux2.gif)
+
 
 ## Useful materials
 
