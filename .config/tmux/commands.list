@@ -9,16 +9,22 @@
 [list binaries of user processes] for pid in $(ps -u $USER -o pid); do exe=$(readlink -f /proc/$pid/exe 2>/dev/null); if [ "$exe" ]; then echo "$pid: $exe"; fi; done | awk '{print $2}' | sort -u
 
 # System Monitoring
+[cpu utilization] vmstat 1 2 | tail -1 | awk '{print 100 - $15 "%"}'
 [show mount points >80%] df -h | awk '$5 ~ /^8[0-9]%/ {print $6}'
 [show disk usage top20] du -h / 2> /dev/null | sort -rh | head -n 20
+[logs disk usage] journalctl --disk-usage
 [show open files in dir] lsof +D /opt
 [show uptime as unixtime] date -d "$(uptime -s)" +%s
 [show top 10 bash history] history | awk '{print $2}' | sort | uniq -c | sort -rn | head
 [show swap usage processes] for file in /proc/*/status ; do awk '/VmSwap|Name/{printf $2 " " $3}END{ print ""}' $file; done | sort -k 2 -n -r | head -n 10
 [show swappiness value] cat /proc/sys/vm/swappiness
 [show OOM scores] printf "PID\tOOM Score\tOOM Adj\tCommand\n"; while read -r pid comm; do [ -f /proc/$pid/oom_score ] && [ $(cat /proc/$pid/oom_score) != 0 ] && printf "%d\t%d\t\t%d\t%s\n" "$pid" "$(cat /proc/$pid/oom_score)" "$(cat /proc/$pid/oom_score_adj)" "$comm"; done < <(ps -e -o pid= -o comm=) | sort -k 2nr
-[show iotop] iotop -o -P -d 5
-[grep IPs in log] grep -a -E '([0-9]{1,3}\.){3}[0-9]{1,3}' /var/log/nginx/access.log
+[iotop: show iotop] iotop -o -P -d 5
+[iostat: mon stat of cpu and devs] iostat -x 2
+[grep: grep IPs in log] grep -a -E '([0-9]{1,3}\.){3}[0-9]{1,3}' /var/log/nginx/access.log
+
+# LVM
+[list lv and snapshots] lvs --options lv_name,lv_size,origin,lv_attr
 
 # Scheduling
 [add cron job] { crontab -l; echo "0 3 * * 0 ls -l &> dirs.txt"; } | crontab -
@@ -32,6 +38,9 @@
 [check port via curl] curl -v telnet://10.11.12.13:1234
 [check port via echo] echo > /dev/tcp/r4ven.me/443 && echo "open" || echo "unavailable"
 [check port via openssl] openssl s_client -connect r4ven.me:443
+[ip: up/down iface] sudo ip link set dev eth0 down; sudo ip link set dev eth0 up
+[sysctl: enable forwarding (temp)] sysctl -w net.ipv4.ip_forward=1 net.ipv6.conf.all.forwarding=1
+[sysctl: enable forwarding (perm)] echo -e 'net.ipv4.ip_forward = 1\nnet.ipv6.conf.all.forwarding = 1' > /etc/sysctl.d/99-forwarding.conf && sysctl -p /etc/sysctl.d/99-forwarding.conf
 
 # Packet Capture
 [capture dst host:port] tcpdump -i any -nn -q dst host 10.11.12.13 and dst port 443
@@ -43,38 +52,71 @@
 [encrypt tar with openssl] tar -czf - /var/log/apt | openssl enc -aes-256-cbc -pbkdf2 -e -out ./logs.tar.gz.enc
 [decrypt file with openssl] openssl enc -aes-256-cbc -pbkdf2 -d -in ./logs.tar.gz.enc -out ./logs.tar.gz
 [openssl connect] openssl s_client -connect r4ven.me:443
-[openssl show cert remote] openssl s_client -connect r4ven.com:443 < /dev/null 2> /dev/null | openssl x509 -text
+[openssl show cert remote] openssl s_client -connect r4ven.me:443 < /dev/null 2> /dev/null | openssl x509 -text
 [openssl show cert alt] openssl s_client -connect r4ven.me:443 -servername r4ven.me < /dev/null 2>/dev/null | openssl x509 -text
-[openssl show local cert] openssl x509 -in ./ca-cert.pem -text -noout
+[openssl show local cert] openssl x509 -in ./ca-cert.crt -text -noout
+[openssl: self-signed cert] openssl req -x509 -nodes -days 7300 -newkey rsa:4096 -keyout ./example.com.key -out ./example.crt -subj "/C=RU/ST=Moscow/L=Moscow/O=Example/OU=TEST/CN=example.com"
+[tls rhel: list tls orgs certs] openssl crl2pkcs7 -nocrl -certfile /etc/pki/tls/certs/ca-bundle.crt | openssl pkcs7 -print_certs -text | grep "Subject:"
+[tls deb: list tls orgs certs] openssl crl2pkcs7 -nocrl -certfile /etc/ssl/certs/ca-certificates.crt | openssl pkcs7 -print_certs -text | grep "Subject:"
+[tls rhel: add new cert] cp ./org_name.crt /etc/pki/ca-trust/source/anchors/org_name.crt | update-trust extract
+[tls deb: add new cert] cp ./org_name.crt /usr/local/share/ca-certificates/org_name.crt | update-ca-certificates
+[tls: list orgs] trust list | less
 [gpg encrypt file] gpg --batch --passphrase-file /path/to/password_file --symmetric --cipher-algo AES256 example.txt
 
 # DNS / Network Tools
 [dig default] dig r4ven.me +short +answer +identify
+[dig default] dig r4ven.me +short +trace
 [dig alt ns] dig @8.8.8.8 r4ven.me +short +answer +identify
 [nmap tcp port check] nmap 10.11.12.13 -p 22
 [nmap udp port check] nmap -sU 10.11.12.13 -p 53
+[nc: tcp server] while true; do echo "Listen TCP port 9999..."; nc -l -p 9999 | sed 's/.*/You say: &/'; echo "TCP-connection closed."; done
+[nc: tcp server] while true; do nc -l -p 12345 | tee /dev/tty | { read line; echo "pong"; } ; done
+[nc: udp server] while true; do echo "pong" | nc -u -l -p 9999; done
+[nc: tcp client] echo "hello tcp" | nc -v 127.0.0.1 12345
+[nc: udp client] echo "ping" | nc -u -w1 127.0.0.1 9999
+[socat: udp server] socat -v UDP-RECVFROM:9999,fork SYSTEM:"echo 'pong'"
+[socat: tcp server] socat -v TCP-LISTEN:9999,fork SYSTEM:"echo 'pong'"
+[socat: udp client] echo "ping" | socat - UDP:127.0.0.1:9999
+[socat: tcp client] echo "ping" | socat - TCP:127.0.0.1:9999
 
 # Docker
 [docker network create] docker network create --opt com.docker.network.bridge.name=br-monitoring --opt com.docker.network.enable_ipv6=false --driver bridge --subnet 172.22.22.0/24 --gateway 172.22.22.1 monitoring_network
 [docker network connect] docker run -it --rm --network swarm_network alpine sh
 [docker build image] docker build -t r4venme/test .
-[docker build multiarch] docker buildx create --use && docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t r4venme/test:1.0 .
+[docker build multiarch] docker buildx create --use && docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t r4venme/test:1.0 ./
 [docker multitool container] docker run --rm -it --network=container:test --pid container:test wbitt/network-multitool:alpine-extra bash
 
+# Kubernetes
+[k8s: get objects] kubectl -n name_space get pods,svc,pvc,sts,pv -o wide
+[k8s: labels] kubectl get nodes --show-labels
+[k8s: delete all] kubectl delete all --all -n name_space --force --grace-period=0
+[k8s: validate YAML syntax] kubectl apply --dry-run=client -f your-manifest.yaml
+[k8s: validate with API server wthout changes] kubectl apply --dry-run=server -f your-manifest.yaml
+
+# Helm
+[helm: add repo] helm repo add gitea-charts https://dl.gitea.com/charts/
+[helm: search repo] helm search repo gitea-charts
+[helm: download chart files] helm pull gitea-charts/gitea --untar
+
 # Git
-[git init repo] git init --initial-branch=main && git remote add origin ssh://git@github.com/r4ven-me/reponame.git
-[git init with config] git init --initial-branch=main && git config user.name "Ivan Cherniy" && git config user.email "kar-kar@r4ven.me" && git remote add origin ssh://git@github.com/r4ven-me/reponame.git
-[git push changes] git add . && git commit -m 'upd' && git push
+[git: init repo] git init --initial-branch=main && git remote add origin ssh://git@github.com/r4ven-me/reponame.git
+[git: init with config] git init --initial-branch=main && git config user.name "Ivan Cherniy" && git config user.email "kar-kar@r4ven.me" && git remote add origin ssh://git@github.com/r4ven-me/reponame.git
+[git: push changes] git add . && git commit -m 'upd' && git push
+[git: git log visual] git log --pretty=format:"%h %ad | %s%d [%an]" --graph --date=short
 
 # File Management
 [replace text inplace] sed -i.bak 's/old_text/new_text/g' file.txt
-[find chmod files] find /path -type f -exec chmod 644 {} \;
-[find chmod dirs] find /path -type d -exec chmod 755 {} \;
+[find and chmod files] find /path -type f -exec chmod 644 {} \;
+[find and chmod dirs] find /path -type d -exec chmod 755 {} \;
+[find with exclude path] find ./ -path ./subpath -prune -o -name 'index.md' -ls
 [set ACL for user] setfacl -m u:ivan:rwx /opt/mydata
 
 # Web
-[curl download file] curl -fsSL https://raw.githubusercontent.com/r4ven-me/dots/main/.zshrc -o ~/.zshrc
-[curl trace request] curl --trace-ascii trace.txt r4ven.me
+[curl: download file] curl -fsSL https://raw.githubusercontent.com/r4ven-me/dots/main/.zshrc -o ~/.zshrc
+[curl: trace request] curl --trace-ascii trace.txt r4ven.me
+[curl: list all domains] curl -s -L -v https://example.com 2>&1 | grep 'Connected to'
+[curl: telegream message] curl -s -X POST -H 'Content-Type: application/json' -d '{"chat_id": "'"$TG_CHAT_ID"'", "text": "'"${item}: $message"'", "parse_mode": "Markdown"}' "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage"
+[curl: telegram file] curl -s -X POST -F "chat_id=${TG_CHAT_ID}" -F "document=@${FILE_PATH}" -F "caption=${CAPTION_TEXT}" -F "parse_mode=Markdown" "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendDocument"
 
 # Users and groups
 [system group add] addgroup --system --gid 1995 zabbix
@@ -89,17 +131,26 @@
 [systemd list cgroups] sudo systemd-cgls
 [systemd top] sudo systemd-cgtop -d 3
 
+# Debug CPU
+[perf: top] perf top
+[perf: summary] perf stat ./your_program
+[perf: record execution] perf record -g ./your_program
+[perf: record running proc] perf record -g -p $(pidof your_program)
+[perf: analyze] perf report ./perf.data
+
+# Debug DISK
+[dd: test write speed] sync; dd if=/dev/zero of=tempfile bs=1M count=1024; sync
+[dd: test read spped] sysctl -w vm.drop_caches=3 && dd if=tempfile of=/dev/null bs=1M count=1024
+
 # Sysrq
 [sysrq reboot] echo b > /proc/sysrq-trigger
-[sysrq help] echo h | sudo tee /proc/sysrq-trigger | grep 'sysrq: HELP' /var/log/kern.log
+[sysrq help] echo h > /proc/sysrq-trigger; grep 'sysrq: HELP' /var/log/kern.log
 
 # Ansible
+[ansible list inventory] ansible-inventory --list
 [ansible get facts] ansible debian12-vpn -m setup -a 'filter=os_family,distribution_version'
 [ansible run with vars] ansible-playbook playbook.yml -e 'user_name=root' -e 'user_home=/root'
-[ansible start openarena] ansible debian12-vpn -b -m shell -a 'systemctl start service_name'
-[ansible stop openarena] ansible debian12-vpn -b -m shell -a 'systemctl stop service_name'
-[ansible start teamspeak] ansible debian12-vpn -b -m shell -a 'systemctl start service_name'
-[ansible stop teamspeak] ansible -m shell -a 'systemctl stop teamspeak' debian12-vpn -b
+[ansible run shell cmd] ansible debian12-vpn -b -m shell -a 'systemctl start service_name'
 
 # Asciinema
 [record terminal session] asciinema rec demo.cast
@@ -114,13 +165,19 @@
 [logging all output] exec > >(tee >(logger -t $(basename "${BASH_SOURCE[0]}")) | while IFS= read -r line; do echo "$(date +"[%Y-%m-%d %H:%M:%S.%3N]") - $line"; done | tee -a "${BASH_SOURCE[0]%.*}.log") 2>&1
 
 # SSH
+[ssh: show pub key] ssh-keygen -y -f ~/.ssh/id_ed25519
+[ssh: copy pub key to remote host] ssh-copy-id -i ~/.ssh/id_ed25519 user@host
 [port forwarding] ssh -q -f -N -L 127.0.0.1:5432:localhost:5432 ivan@test.r4ven.me
-[port forwarding temp] ssh -q -f -L 127.0.0.1:5432:localhost:5432 test.r4ven.me sleep 60
+[port forwarding temp] ssh -q -f -L 127.0.0.1:5432:localhost:5432 ivan@test.r4ven.me sleep 60
 [port forwarding temp full] ssh -q -f -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ExitOnForwardFailure=yes -L 127.0.0.1:5432:localhost:5432 test.r4ven.me -p 2222 -l ivan -i ~/.ssh/id_ed25519_test sleep 60
 [reverse port forwarding] ssh -q -f -N -R 127.0.0.1:4443:localhost:5001 ivan@test.r4ven.me
 
 # Misc
-[generate random string] cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1
+[generate urandom string] cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1
+[print term colors] for i in {0..255}; do printf "\e[38;5;%sm%03d " "$i" "$i"; (( (i + 1) % 16 == 0 )) && printf "\e[0m\n"; done; printf "\e[0m\n"
+
+# Zabbix
+[zabbix: ping host] zabbix_get -s 192.168.1.100 -p 10050 -k agent.ping 
 
 # Test Commands
 [test command 1] echo test1

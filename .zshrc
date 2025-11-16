@@ -23,7 +23,10 @@ export TERM="xterm-256color"               # Set terminal type for better color 
 # Oh-my-zsh theme selection
 # Find more themes: https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
 if [[ -n "$DISPLAY" || $(tty) == /dev/pts* ]]; then
-    ZSH_THEME="agnoster"                   # Use this theme in GUI mode
+    if [[ ! -f "${ZSH_CUSTOM}/themes/agnoster-r4ven.zsh-theme" ]]; then
+        curl -fsSL https://raw.githubusercontent.com/r4ven-me/dots/main/.config/oh-my-zsh/custom/themes/agnoster-r4ven.zsh-theme -o "${ZSH_CUSTOM}/themes/agnoster-r4ven.zsh-theme"
+    fi
+    ZSH_THEME="agnoster-r4ven"             # Use this theme in GUI mode
     export VIRTUAL_ENV_DISABLE_PROMPT=1    # Disable default virtualenv prompt
 else
     ZSH_THEME="dpoggi"                     # Use the 'noicon' theme in other cases, e.g. in console (tty)
