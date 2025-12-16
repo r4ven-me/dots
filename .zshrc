@@ -20,10 +20,30 @@ export ZSH_CUSTOM="$ZSH/custom"            # Path to Oh My Zsh custom dir
 export TERM="xterm-256color"               # Set terminal type for better color support
 # export TERM="screen-256color"            # Alternative terminal type (commented out)
 
+have() {
+    local utils=("$@")
+    for util in "${utils[@]}"; do
+        if ! command -v "$util" >/dev/null 2>&1; then
+            return 1
+        fi
+    done
+    return 0
+}
+
 # Oh-my-zsh theme selection
 # Find more themes: https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-if [[ -n "$DISPLAY" || $(tty) == /dev/pts* ]]; then
-    ZSH_THEME="agnoster-r4ven"             # Use this theme in GUI mode
+if [[ -n "$DISPLAY" || $(tty) == /dev/pts* ]] && have "curl"; then
+    R4VEN_THEME="agnoster-r4ven.zsh-theme"
+    if [[ ! -f "${ZSH_CUSTOM}/themes/${R4VEN_THEME}" ]]; then
+        curl \
+            --fail \
+            --silent \
+            --location \
+            --show-error \
+            --outout "${ZSH_CUSTOM}/themes/${R4VEN_THEME}"
+            https://raw.githubusercontent.com/r4ven-me/dots/main/.config/oh-my-zsh/custom/themes/"${R4VEN_THEME}"
+    fi
+    ZSH_THEME="${R4VEN_THEME%%.*}"         # Use this theme in GUI mode
     export VIRTUAL_ENV_DISABLE_PROMPT=1    # Disable default virtualenv prompt
 else
     ZSH_THEME="dpoggi"                     # Use the 'noicon' theme in other cases, e.g. in console (tty)
@@ -58,7 +78,8 @@ plugins=(
     sudo                       # Run/repeat last command with sudo (duble Esc)
     docker                     # Docker command-line helper
     kubectl                    # Kubernetes command-line helper
-    cmdtime                    # Measure time spent on commands
+    # cmdtime                    # Measure time spent on commands
+    # zsh-autopair               # Auto-close parentheses and quotes
     zsh-completions            # Additional completion scripts (Tab)
     zsh-autosuggestions        # Suggest commands based on history
     fast-syntax-highlighting   # Syntax highlighting for commands
@@ -75,16 +96,16 @@ fi
 # git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-completions
 
 # Autoinstall oh-my-zsh framework
-if [[  ! -d "$ZSH" && -x $(which git) ]]; then
+if [[  ! -d "$ZSH" ]] && have "git"; then
     git clone https://github.com/ohmyzsh/ohmyzsh.git "$ZSH"
 fi
 
 # Autoinstall selected plugins
-if [[ -d "$ZSH_CUSTOM" && -x $(which git)  ]]; then
-    if [[ ! -d "${ZSH_CUSTOM}"/plugins/cmdtime ]]; then
-        git clone https://github.com/tom-auger/cmdtime \
-            "${ZSH_CUSTOM}"/plugins/cmdtime
-    fi
+if [[ -d "$ZSH_CUSTOM" && have "git"  ]]; then
+    # if [[ ! -d "${ZSH_CUSTOM}"/plugins/cmdtime ]]; then
+    #     git clone https://github.com/tom-auger/cmdtime \
+    #         "${ZSH_CUSTOM}"/plugins/cmdtime
+    # fi
     
     if [[ ! -d "${ZSH_CUSTOM}"/plugins/zsh-autopair ]]; then
         git clone https://github.com/hlissner/zsh-autopair \
@@ -107,10 +128,6 @@ if [[ -d "$ZSH_CUSTOM" && -x $(which git)  ]]; then
         
         reset
     fi
-fi
-
-if [[ ! -f "${ZSH_CUSTOM}/themes/agnoster-r4ven.zsh-theme" ]]; then
-    curl -fsSL https://raw.githubusercontent.com/r4ven-me/dots/main/.config/oh-my-zsh/custom/themes/agnoster-r4ven.zsh-theme -o "${ZSH_CUSTOM}/themes/agnoster-r4ven.zsh-theme"
 fi
 
 ######################
@@ -137,21 +154,21 @@ alias p8="ping -c3 8.8.8.8"
 alias ip="ip --color"
 
 # Configure code editor
-if [[ -x $(which nvim) ]]; then
-    export EDITOR="$(which nvim)"
-    export VISUAL="$(which nvim)"
+if have "nvim"; then
+    export EDITOR="$(command -v nvim)"
+    export VISUAL="$(command -v nvim)"
     alias vim="nvim"
     alias n="nvim"
     alias N="sudo nvim"
-elif [[ -x $(which vim) ]]; then
-    export EDITOR="$(which vim)"
-    export VISUAL="$(which vim)"
+elif have "vim"; then
+    export EDITOR="$(command -v vim)"
+    export VISUAL="$(command -v vim)"
     alias v="vim"
     alias V="sudo vim"
 fi
 
 # Configure FZF with Nord theme colors
-if [[ -x $(which fzf) ]]; then
+if have "fzf"; then
     export FZF_DEFAULT_OPTS="--exact"
     export FZF_DEFAULT_OPTS=$FZF_DEFAULT_OPTS'
         --color=fg:#e5e9f0,bg:#3b4252,hl:#81a1c1
@@ -161,10 +178,10 @@ if [[ -x $(which fzf) ]]; then
 fi
 
 # Defining a variable with the name of the utility: bat or batcat
-if [[ -e $(which batcat) ]]; then
+if have "batcat"; then
     export bat="batcat"
     alias bat="batcat"
-elif [[ -e $(which bat) ]]; then
+elif have "bat"; then
     export bat="bat"
 fi
 
@@ -193,17 +210,18 @@ if [[ -x $(which exa) ]]; then
     else
         alias ls="exa --group --header"
     fi
+    alias l="ls"
     alias ll="ls --long"
-    alias l="ls --long --all"
+    alias lll="ls --long --all"
+    alias llll="ls -lbHigUmuSa --sort=modified --time-style=long-iso"
     alias lm="ls --long --all --sort=modified"
-    alias lmm="ls -lbHigUmuSa --sort=modified --time-style=long-iso"
     alias lt="ls --tree"
     alias lr="ls --recurse"
     alias lg="ls --long --git --sort=modified"
 fi
 
 # APT
-if [[ -x $(which apt) ]]; then
+if have "apt"; then
     alias AU="sudo apt update"
     alias AUP="sudo apt upgrade"
     alias AR="sudo apt autoremove"
@@ -212,13 +230,13 @@ if [[ -x $(which apt) ]]; then
 fi
 
 # Ansible
-if [[ -e $(which ansible) ]]; then
+if have "ansible"; then
     ap() { ansible-playbook ~/ansible/playbooks/"$@"; }
     alias ac="ansible-console"
 fi
 
 # Tmux
-if [[ -e $(which tmux) ]]; then
+if have "tmux"; then
     alias t="tmux attach -t Work || tmux new -s Work"
     alias T="sudo tmux attach -t Work! || sudo tmux new -s Work!"
 fi
