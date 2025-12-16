@@ -40,7 +40,7 @@ if [[ -n "$DISPLAY" || $(tty) == /dev/pts* ]] && have "curl"; then
             --silent \
             --location \
             --show-error \
-            --output "${ZSH_CUSTOM}/themes/${R4VEN_THEME}"
+            --output "${ZSH_CUSTOM}/themes/${R4VEN_THEME}" \
             https://raw.githubusercontent.com/r4ven-me/dots/main/.config/oh-my-zsh/custom/themes/"${R4VEN_THEME}"
     fi
     ZSH_THEME="${R4VEN_THEME%%.*}"         # Use this theme in GUI mode
