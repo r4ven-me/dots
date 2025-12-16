@@ -30,6 +30,11 @@ have() {
     return 0
 }
 
+# Autoinstall oh-my-zsh framework
+if [[  ! -d "$ZSH" ]] && have "git"; then
+    git clone https://github.com/ohmyzsh/ohmyzsh.git "$ZSH"
+fi
+
 # Oh-my-zsh theme selection
 # Find more themes: https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
 if [[ -n "$DISPLAY" || $(tty) == /dev/pts* ]] && have "curl"; then
@@ -40,9 +45,13 @@ if [[ -n "$DISPLAY" || $(tty) == /dev/pts* ]] && have "curl"; then
             --silent \
             --location \
             --show-error \
-            --output "${ZSH_CUSTOM}/themes/${R4VEN_THEME}" \
+            --output "${ZSH_CUSTOM}"/themes/"${R4VEN_THEME}" \
             https://raw.githubusercontent.com/r4ven-me/dots/main/.config/oh-my-zsh/custom/themes/"${R4VEN_THEME}"
     fi
+    # DASHES_COLOR=004
+    DASHES_COLOR="blue"
+    TIMER_FORMAT="%d"
+    TIMER_THRESHOLD=0
     ZSH_THEME="${R4VEN_THEME%%.*}"         # Use this theme in GUI mode
     export VIRTUAL_ENV_DISABLE_PROMPT=1    # Disable default virtualenv prompt
 else
@@ -95,13 +104,8 @@ fi
 # Example to install custom plugins manually:
 # git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-completions
 
-# Autoinstall oh-my-zsh framework
-if [[  ! -d "$ZSH" ]] && have "git"; then
-    git clone https://github.com/ohmyzsh/ohmyzsh.git "$ZSH"
-fi
-
 # Autoinstall selected plugins
-if [[ -d "$ZSH_CUSTOM" && have "git"  ]]; then
+if [[ -d "$ZSH_CUSTOM" ]] && have "git"; then
     # if [[ ! -d "${ZSH_CUSTOM}"/plugins/cmdtime ]]; then
     #     git clone https://github.com/tom-auger/cmdtime \
     #         "${ZSH_CUSTOM}"/plugins/cmdtime
@@ -220,6 +224,75 @@ if [[ -x $(which exa) ]]; then
     alias lg="ls --long --git --sort=modified"
 fi
 
+# grc
+if have "grc"; then GRC="$(command -v grc)"; fi
+if tty -s && [[ -n "$TERM" && "$TERM" != dumb && -n "$GRC" ]]; then
+    alias colourify="$GRC -es"
+    alias configure="colourify configure"
+    alias ping="colourify ping"
+    alias traceroute="colourify traceroute"
+    alias gcc="colourify gcc"
+    alias make="colourify make"
+    alias netstat="colourify netstat"
+    alias stat="colourify stat"
+    alias ss="colourify ss"
+    alias diff="colourify diff"
+    alias wdiff="colourify wdiff"
+    alias last="colourify last"
+    alias who="colourify who"
+    alias cvs="colourify cvs"
+    alias mount="colourify mount"
+    alias findmnt="colourify findmnt"
+    alias mtr="colourify mtr"
+    alias ps="colourify ps"
+    alias dig="colourify dig"
+    alias ifconfig="colourify ifconfig"
+    # alias ls="grc ls"
+    alias df="colourify df"
+    alias du="colourify du"
+    # alias ip="grc ip"
+    alias env="colourify env"
+    alias systemctl="colourify systemctl"
+    alias iptables="colourify iptables"
+    alias lspci="colourify lspci"
+    alias lsblk="colourify lsblk"
+    alias lsof="colourify lsof"
+    alias blkid="colourify blkid"
+    alias id="colourify id"
+    alias iostat="colourify iostat"
+    alias sar="colourify sar"
+    alias fdisk="colourify fdisk"
+    alias free="colourify free"
+    alias docker="colourify docker"
+    alias journalctl="colourify journalctl"
+    alias kubectl="colourify kubectl"
+    alias sensors="colourify sensors"
+    alias sysctl="colourify sysctl"
+    alias tail="colourify tail"
+    alias head="colourify head"
+    alias tcpdump="colourify tcpdump"
+    alias tune2fs="colourify tune2fs"
+    alias lsmod="colourify lsmod"
+    alias lsattr="colourify lsattr"
+    alias semanage="colourify semanage"
+    alias getsebool="colourify getsebool"
+    alias ulimit="colourify ulimit"
+    alias vmstat="colourify vmstat"
+    alias dnf="colourify dnf"
+    alias nmap="colourify nmap"
+    alias uptime="colourify uptime"
+    alias w="colourify w"
+    alias getfacl="colourify getfacl"
+    alias ntpdate="colourify ntpdate"
+    alias showmount="colourify showmount"
+    alias apache="colourify apache"
+    alias iwconfig="colourify iwconfig"
+    alias lolcat="colourify lolcat"
+    alias whois="colourify whois"
+    alias go="colourify go"
+    alias sockstat="colourify sockstat"
+fi
+
 # APT
 if have "apt"; then
     alias AU="sudo apt update"
@@ -312,7 +385,6 @@ _cmd_completion() {
 
 # Register the autocompletion function for the `cmd` command
 compdef _cmd_completion cmd
-
 
 ##############
 ### PROMPT ###
