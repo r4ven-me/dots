@@ -42,7 +42,6 @@ if [[ -n "$DISPLAY" || $(tty) == /dev/pts* ]] && have "curl"; then
     if [[ ! -f "${ZSH_CUSTOM}/themes/${R4VEN_THEME}" ]]; then
         curl \
             --fail \
-            --silent \
             --location \
             --show-error \
             --output "${ZSH_CUSTOM}"/themes/"${R4VEN_THEME}" \

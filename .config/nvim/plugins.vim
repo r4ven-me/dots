@@ -19,14 +19,14 @@ call plug#begin('~/.local/share/nvim/plugged')
     " IDE options
     Plug 'tpope/vim-endwise'            " Automatically ends if, do, def structures
     Plug 'neomake/neomake'              " Autochecks code (with pylint, shellcheck, etc.)
-    Plug 'WolfgangMehner/bash-support'  " Bash support (see :h bashsupport.txt)
+    " Plug 'WolfgangMehner/bash-support'  " Bash support (see :h bashsupport.txt)
     Plug 'airblade/vim-gitgutter'       " Git highlight
     Plug 'solvedbiscuit71/vim-autopair' " Insert or delete brackets, parens, quotes in pairs
     Plug 'junegunn/fzf'                 " Fuzzy finder (exec file)
     Plug 'junegunn/fzf.vim'             " Fuzzy finder (requires fzf & bat to be installed)
     Plug 'tpope/vim-commentary'         " Work with comments (gcc, gc)
     Plug 'wincent/indent-blankline.nvim'" Indentation guides
-    Plug 'davidhalter/jedi-vim', { 'on': 'JediClearCache' } " Python LSP
+    " Plug 'davidhalter/jedi-vim', { 'on': 'JediClearCache' } " Python LSP
     " NERDTree FM with icons and Git
     Plug 'preservim/nerdtree'           " NERDTree plugin
     Plug 'ryanoasis/vim-devicons'       " File icons for NERDTree
@@ -66,8 +66,8 @@ inoremap <F19> <esc>:NeomakeDisable<CR>:NeomakeClean<CR>a
 
 " ----- jedi-vim -----
 " F8 activates Jedi Python LSP
-autocmd FileType python map <F8> :JediClearCache<CR>
-autocmd FileType python imap <F8> <ESC>:JediClearCache<CR>a
+" autocmd FileType python map <F8> :JediClearCache<CR>
+" autocmd FileType python imap <F8> <ESC>:JediClearCache<CR>a
 
 " ----- bash-support -----
 " See help ':h bashsupport.txt'
